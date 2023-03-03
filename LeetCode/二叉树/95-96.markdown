@@ -1,0 +1,76 @@
+**96**这题二叉树的皮，dp的心
+
+没了
+
+首先，当取一个点作为root时，他的左右子树的节点值范围都是固定的，所有小于root值的节点都在左子树，反之都在右子树，并且这些值都是连续的。
+
+然后，不同值相同个数的连续序列能构成的bst的数量是相同的，即{1，2，3}与{5， 6，7}所构成的bst数量都相同
+
+举例：{1，2，3}的bst数量确定后（假设为x），在确定{1，2，3，4， 5，6，7}时，当以4为root时，左子树的范围是{1，2，3}，右子树{5，6，7}，那么自然组合起来，以4为root时总的bst为x*x
+
+很明显就是dp了，dp[i]代表{1...n}能构成的BST数量。
+
+那么就简单了，遍历每个值（1~i~n），意思是算dp[i].
+
+然后再遍历1~j~i，取j作为root，然后按照例子里的方法计算以j为root所构建的bst数，把所有1~i的bst数相加就得到dp[i]
+
+95其实就是96的改进版，思路一样，但是要会写如何创建树并返回树。
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    vector<TreeNode*> build(int l, int r) {  //返回值：这个数据范围内
+        if(l>r) return {};
+        else if(l==r) {
+            TreeNode* root = new TreeNode(l);
+            return {root};
+        }
+        vector<TreeNode*> roots;
+        for(int i=l;i<=r;i++){
+            vector<TreeNode*> ll = build(l, i-1);
+            vector<TreeNode*> rr = build(i+1, r);
+            if(ll.size() && rr.size()){
+                for(int j=0;j<ll.size();j++){
+                    for(int k=0;k<rr.size();k++){
+                        TreeNode* root = new TreeNode(i);
+                        root->left = ll[j];
+                        root->right = rr[k];
+                        roots.push_back(root);
+                    }    
+                }
+            }else if(ll.size()){
+                for(int j=0;j<ll.size();j++){
+                    TreeNode* root = new TreeNode(i);
+                    root->left = ll[j];   
+                    root->right = NULL;
+                    roots.push_back(root);
+                }
+            }else{
+                for(int j=0;j<rr.size();j++){
+                    TreeNode* root = new TreeNode(i);
+                    root->left = NULL;
+                    root->right = rr[j];   
+                    roots.push_back(root);
+                }
+            }
+        }
+        return roots;
+    }
+    vector<TreeNode*> generateTrees(int n) {
+        return build(1, n);
+    }
+};
+```
+
+这道题难点在于确定build函数返回值，一般的构建二叉树的题，返回值一般为一个二叉树节点指针，这里因为每个值为root时，其相对应得子树结构有很多种，故返回的是一个指针数组。然后函数主要内容就是根据返回的左右指针数组去依次循环构建符合条件的子树，然后再把root返回。
