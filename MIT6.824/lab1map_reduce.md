@@ -50,7 +50,82 @@ Worker 更新 task 完成信息后，Coordinator需要检查，这里采用每�
 
 ### 关于测试
 
-#### early_exit.sh
+#### reduce parallelism
+
+在某一次运行test-mr-many.sh时，出现了 reduce parallelism 测点 fail。出乎意料，因为确实在之前的测试中从来没有出现过这个测点fail。并且查看了 rtiming.go 文件。reduce 函数返回 nparallel 函数的结果。nparallel 函数如下：
+```go
+func nparallel(phase string) int {
+	// create a file so that other workers will see that
+	// we're running at the same time as them.
+	pid := os.Getpid()
+	myfilename := fmt.Sprintf("mr-worker-%s-%d", phase, pid)
+	err := ioutil.WriteFile(myfilename, []byte("x"), 0666)
+	if err != nil {
+		panic(err)
+	}
+
+	// are any other workers running?
+	// find their PIDs by scanning directory for mr-worker-XXX files.
+	dd, err := os.Open(".")
+	if err != nil {
+		panic(err)
+	}
+	names, err := dd.Readdirnames(1000000)
+	if err != nil {
+		panic(err)
+	}
+	ret := 0
+	for _, name := range names {
+		var xpid int
+		pat := fmt.Sprintf("mr-worker-%s-%%d", phase)
+		n, err := fmt.Sscanf(name, pat, &xpid)
+		if n == 1 && err == nil {
+			err := syscall.Kill(xpid, 0)
+			if err == nil {
+				// if err == nil, xpid is alive.
+				ret += 1
+			}
+		}
+	}
+	dd.Close()
+
+	time.Sleep(1 * time.Second)
+
+	err = os.Remove(myfilename)
+	if err != nil {
+		panic(err)
+	}
+
+	return ret
+}
+```
+大致意思就是利用生成临时文件 mr-worker-PID，查找当前运行的 Worker 进程有多少个，然后看测试shell脚本：
+```shell
+$TIMEOUT ../mrcoordinator ../pg*txt &
+sleep 1
+
+$TIMEOUT ../mrworker ../../mrapps/rtiming.so &
+$TIMEOUT ../mrworker ../../mrapps/rtiming.so
+
+NT=`cat mr-out* | grep '^[a-z] 2' | wc -l | sed 's/ //g'`
+if [ "$NT" -lt "2" ]
+then
+  echo '---' $NT parallel reduces.
+  echo '---' reduce parallelism test: FAIL
+  failed_any=1
+else
+  echo '---' reduce parallelism test: PASS
+fi
+```
+测试逻辑应该是起2个worker, reduce 函数返回执行这个 reduce task 时的进程个数，然后统计输出结果中 value 为2的 kv 对。如果这样的kv对少于2，则测试不通过。
+
+这个测试逻辑说实话我觉得挺怪的，之前没看测试脚本时我觉得可能要实现单 worker 多线程的方式，但是这测试脚本明显在测试进程数啊，如果用多线程实现，结果应该还是一样的。所以这个测点不是说要你用多线程实现才能过。
+
+我的理解是，正常来说，一个 worker 节点如果是一台电脑，那多进程来执行任务也没事，如果只是一个进程，那还是用多线程。
+
+因为基本上这个测点后来也没出现过问题，所以我也就不改了。
+
+#### early exit
 
 测试时会将把第一个worker退出时的mr-out-*作为mr的最终输出。
 
@@ -63,7 +138,7 @@ Worker 更新 task 完成信息后，Coordinator需要检查，这里采用每�
 解决方法：
 一开始我是想直接在执行文件打开操作时加try-catch的，但是后来想想太蠢了这样。所以我给mr任务设定了第四种状态3，**表示上一个状态结束master还未来得及改变**，worker知道这个状态后直接执行等待，然后再发起请求
 
-#### crash.sh
+#### crash
 
 ![crash.sh](image/image1.png)
 
@@ -114,7 +189,7 @@ Worker 更新 task 完成信息后，Coordinator需要检查，这里采用每�
 			c.State = 2
 		}
 		c.Mu.Unlock()
-		time.Sleep(time.Second)
+		time.Sleep(time.Second)****
 	}
 ```
 
@@ -134,3 +209,8 @@ bash test-mr.sh
 ```shell
 bash test-mr-many.sh 10
 ```
+![多次test-mr](image/image4.jpg)
+
+### 总结
+
+其实代码实现很早就完成了，但是一开始只是测test-mr.sh，发现all pass，就没去管他了，结果第二天重新测一遍就出现了问题，然后进行大量测试，发现后三个测点或多或少会出现问题，所以就把每个测点单独拿出来多次测，然后看输出的内容，如果嫌麻烦就把测试输出都重定向到日志中，方便查看。
