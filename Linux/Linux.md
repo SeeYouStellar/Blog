@@ -40,6 +40,10 @@ https://sites.google.com/site/linuxxuexi/rhel-xi-tong-guan-li/di7zhanglinux-xi-t
 2. sector扇区：**硬盘的最小存储单位**，每个扇区512字节
 3. block区块：连续的几个扇区是一个block，硬盘读取时不会单独读一个sector，而是读一个block。**block是文件的最小存储单位**，文件至少占用一个block
 
+文件分为普通文件、目录文件、设备文件、链接文件、管道文件、套接字文件
+
+所有文件都会储存在block里，并且都有inode节点。只不过存储的内容不同
+
 #### 文件查找过程：
 文件名->目录（目录文件中有一种map，保存着该目录下文件名到文件inode的映射）->inode->block
 
