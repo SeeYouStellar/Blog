@@ -10,7 +10,7 @@
 
 直接看图，图里就是我的全部思路
 
-![思路图](image/image3.jpg)
+![思路图](../image/image3.jpg)
 
 #### RPC调用
 
@@ -140,7 +140,7 @@ fi
 
 #### crash
 
-![crash.sh](image/image1.png)
+![crash.sh](../image/image1.png)
 
 因为我的wsl是单核的，所以跑测试时间比较长，这个crash.sh的测试有时pass有时fail，好不容易找到一次fail的，map phase没有问题我就不截图了。reduce phase很明显reducetask 9 执行时worker宕机了，但是正常来说master会检查到这个情况并重新分配任务，就像reducetask2。
 
@@ -202,14 +202,14 @@ fi
 bash test-mr.sh
 ```
 
-![单次test-mr](image/image2.jpg)
+![单次test-mr](../image/image2.jpg)
 
 多次测试
 
 ```shell
 bash test-mr-many.sh 10
 ```
-![多次test-mr](image/image4.jpg)
+![多次test-mr](../image/image4.jpg)
 
 ### 总结
 
