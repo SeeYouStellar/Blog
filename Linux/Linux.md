@@ -44,6 +44,10 @@ https://sites.google.com/site/linuxxuexi/rhel-xi-tong-guan-li/di7zhanglinux-xi-t
 
 所有文件都会储存在block里，并且都有inode节点。只不过存储的内容不同
 
+#### 目录文件
+
+目录文件中存储的是该目录下所有文件到其inode的映射表
+
 #### 文件查找过程：
 文件名->目录（目录文件中有一种map，保存着该目录下文件名到文件inode的映射）->inode->block
 

@@ -1,6 +1,6 @@
 ### :heavy_check_mark: List of papers which have read：
 1. （**Note content at the end of the pdf**）MapReduce: Simplified Data Processing on Large Clusters
-2. （**handwritten notes**）The Google File System
+2. （**handwritten notes，supplementarynote**）The Google File System
 
 ### :calendar: List of papers which is not be read：
 1. The Design of a Practical System for Fault-Tolerant Virtual Machines
