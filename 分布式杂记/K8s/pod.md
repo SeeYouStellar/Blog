@@ -116,7 +116,7 @@ kubectl get po --show-label
 kubectl get po -L creation_method,env
 ```
 
-## 标签选择器
+## 标签选择器：对资源进行分类管理
 
 标签选择器根据资源的以下条件来选择资源：
 - 包含（或不包含）使用特定键的标签
@@ -133,3 +133,29 @@ kubectl get po -L creation_method,env
 
 kubectl get pods -L 与 -l的区别：
 ![Alt text](image/image38.png)
+
+## 通过 nodeSelector 来调度 pod 到 node
+
+```yaml
+pod.spec.nodeSelector:
+    labelname:labelval
+```
+其中该字段下的label对是node节点的标签
+
+## 注解
+对资源对象的一些描述
+```yaml
+pod.metadata.annotate:
+    key:val
+```
+
+添加与修改注解的方式与标签一致：
+```shell
+kubectl annotate po podname key=val
+```
+
+## 命名空间
+
+命名空间提供逻辑上的隔离
+
+不一定提供很严格的隔离，包括网络接口。某个节点上的命名空间1上的pod1可以在已知该节点上命名空间2上的pod2的IP情况下，给pod2转发流量。
