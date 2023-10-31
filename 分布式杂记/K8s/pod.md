@@ -159,3 +159,41 @@ kubectl annotate po podname key=val
 命名空间提供逻辑上的隔离
 
 不一定提供很严格的隔离，包括网络接口。某个节点上的命名空间1上的pod1可以在已知该节点上命名空间2上的pod2的IP情况下，给pod2转发流量。
+
+## 存活探针
+
+为pod内的各个容器指定探针
+
+- http GET探针：探查pod的端口和路径，如果探测器收到响应，并且响应状态码不代表错误（换句话说，如果HTTP
+响应状态码是2xx或3xx), 则认为探测成功。如果服务器返回错误响应状态
+码或者根本没有响应，那么探测就被认为是失败的，容器将被重新启动。
+- TCP套接字探针：尝试与容器指定端口建立TCP连接。如果连接成功建立，则
+探测成功。否则，容器重新启动。
+- Exec 探针：在容器内执行任意命令，并检查命令的退出状态码。如果状态码
+是 o, 则探测成功。所有其他状态码都被认为失败。
+
+检测pod是否正在运行，
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+    name: kubia-liveness
+spec:
+    containers:
+    - image: luksa/kubia-unhealthy
+      name: kubia
+      livenessProbe:
+        httpGet:
+          path: /
+          port: 8089
+    - image: luksa/kubia
+      name: kubia2
+      livenessProbe:
+        httpGet:
+          path: /
+          port: 8090
+```
+检测到容器失败，则会重启容器
+![Alt text](image/image39.png)
+

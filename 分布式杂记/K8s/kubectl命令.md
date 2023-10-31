@@ -24,3 +24,9 @@ source <(kubectl completion bash | sed s/kubectl/kc/g)
 相同点：都可以用来创建新的对象
 
 不同点：create只能创建一个对象一次，重复创建会报错；而apply将配置应用于对象，可以对同一个对象进行多次配置应用。
+
+## 强制删除资源
+
+```shell
+kubectl delete pod [pod name] --force --grace-period=0 -n [namespace]
+```
