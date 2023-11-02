@@ -197,3 +197,74 @@ spec:
 检测到容器失败，则会重启容器
 ![Alt text](image/image39.png)
 
+## 就绪探针
+
+若是一个匹配服务中的selector的pod被创建，不管是否已准备就绪，其都会被加入服务的endpoint中。而一旦加入了endpoint，服务就会把请求重定向到endpoint中的任意一个pod中，这就会产生问题。
+
+就绪探针检查机制与存活探针一样，但是如果检测失败，会将某个pod直接从服务的endpoint中移去，说明其还未就绪，无法接受请求。当这个容器准备就绪后，就会把该pod重新加入到endpoint中。**这是存活探针和就绪探针的重要区别**
+
+注意：
+- 就绪探针非常必要，生产实践中必须定义
+- 不能将停止pod的逻辑纳入就绪探针中
+
+### 实践过程
+
+创建rs，使用exec型探针，将在容器内运行ls，查看是否有/var/ready文件
+```yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+   name: kubia
+   namespace: testready
+spec:
+   replicas: 3
+   selector:
+     matchExpressions:
+       - key: app
+         operator: In
+         values:
+           - kubia
+   template:
+     metadata:
+       labels:
+           app: kubia
+     spec:
+       containers:
+       - name: kubia
+         image: luksa/kubia
+         readinessProbe:
+           exec:     
+             command:
+             - ls
+             - /var/ready
+```
+
+创建nodeport
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+   name: kubia-nodeport
+   namespace: testready
+spec:
+   type: NodePort
+   ports:
+   - port: 80
+     targetPort: 8080
+     nodePort: 30125
+   selector:
+      app: kubia
+```
+
+创建完毕后查看pod情况，因为容器内无/var/ready文件，所以READY都为0/1：
+![Alt text](image/image54.png)
+
+在某个容器内创建该文件：
+![Alt text](image/image55.png)
+
+![Alt text](image/image56.png)
+
+![Alt text](image/image57.png)
+
+最后通过访问查看流量去向：
+![Alt text](image/image58.png)

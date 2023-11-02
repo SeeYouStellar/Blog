@@ -30,3 +30,15 @@ source <(kubectl completion bash | sed s/kubectl/kc/g)
 ```shell
 kubectl delete pod [pod name] --force --grace-period=0 -n [namespace]
 ```
+
+## 进入pod
+
+```shell
+kc exec -it -n namespace podname -- /bin/sh
+```
+
+```shell
+docker exec -it container-name /bin/sh
+```
+
+注意这里容易犯错的是，使用kc在master节点创建了pod后，pod内的容器不一定在master节点运行docker ps看到，因为docker没有集群，master节点的docker无法获得运行在其他节点的pod的容器信息。所以需要去运行该pod的节点上运行docker ps。

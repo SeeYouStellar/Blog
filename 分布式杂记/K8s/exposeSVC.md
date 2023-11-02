@@ -179,6 +179,8 @@ Speaker：DaemonSet，对外广播 Service 的 IP 地址。把服务类型为Loa
 
 ### 部署Ingress控制器
 
+参考[nginx-ingress官方教程](https://kubernetes.github.io/ingress-nginx/deploy/)
+
 有很多ingress控制器，选择ingress-nginx控制器
 
 ```shell
@@ -305,4 +307,8 @@ apiVersion: networking.k8s.io/v1
                 port:
                   number: 80
 ```
+
+### headless service
+
+有些客户端需要连接一个服务中的所有pod（我不是很理解），可以通过将服务的clusterIP设置为NONE，创建一个headless服务，这个服务没有IP，那么客户端就可以通过dns服务发现podip，创建[域名：podip]的映射
 
