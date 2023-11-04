@@ -140,3 +140,16 @@ docker tag kubia xxx/kubia
 
 ![Alt text](image/image20.png)
 
+
+# Dockerfile
+
+FROM 镜像源
+
+RUN **镜像创建时**需要执行的shell语句
+
+ADD 源文件 需要放入的镜像目录
+
+ENTRYPOINT **容器创建时**需要执行的可执行命令  即 docker run container-name 时，会执行ENTRYPOINT的语句
+
+CMD 传给可执行命令的参数 docker run container-name [args]
+

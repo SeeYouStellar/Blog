@@ -4,6 +4,8 @@
 
 卷是pod的组成部分，同一个pod内的容器可以共享卷，即可将某个卷同时挂载在多个容器的文件系统里
 
+**挂载卷会使挂载目录下的源文件对应用程序不可见**，所以挂载目录的选择很重要。
+
 ## 卷的类别
 
 1. emptyDir
@@ -84,4 +86,18 @@ spec:
 ![Alt text](image/image60.png)
 ![Alt text](image/image61.png)
 
+因为整个卷挂载会使应用程序无法访问挂载目录下其他文件，所以有subPath属性可以使卷中的某个文件挂载到挂载目录下的某个指定文件。subPath属性为需要挂载的卷中的某个配置文件，mountPath为对应的挂载路径（文件名）
+
+```yaml
+spec:
+  containers:
+  - image: some/iamge
+    volumeMounts:
+    - name: myvolume
+      mountPath: /etc/someconfig.conf
+      subPath: myconfig.conf  
+      defaultMode: "6600"  // -rw-rw-------
+```
+
+挂载时还可以指定挂载文件的rwx权限，用defaultMode属性
 ## gitRepo
