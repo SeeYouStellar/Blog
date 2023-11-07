@@ -131,7 +131,7 @@ spec:
    结果：
    ![Alt text](image/image62.png)
 
-   目前，**configmap的更新不会触发pod的更新**
+   使用环境变量暴露configmap的方式时，**configmap的更新不会触发pod的更新**
 
 2. 将configmap内所有条目都传递给容器
 ```yaml

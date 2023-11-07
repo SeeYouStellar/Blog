@@ -268,3 +268,154 @@ spec:
 
 最后通过访问查看流量去向：
 ![Alt text](image/image58.png)
+
+# pod 元数据如何暴露给应用
+
+## 通过环境变量将metadata暴露给应用
+
+使用containers.env暴露
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: downward
+spec:
+  containers:
+  - name: main
+    image: busybox
+    command: ["sleep", "9999999"]
+    resources:
+      requests:
+        cpu: 15m
+        memory: 100Ki
+      limits:
+        cpu: 100m
+        memory: 4Mi
+    env:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: SERVICE_ACCOUNT
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.serviceAccountName
+    - name: CONTAINER_CPU_REQUEST_MILLICORES
+      valueFrom:
+        resourceFieldRef:
+          resource: requests.cpu
+          divisor: 1m
+    - name: CONTAINER_MEMORY_LIMIT_KIBIBYTES
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.memory
+          divisor: 1Ki
+```
+
+## 通过downwardAPI卷来传递元数据
+downwardAPI会在pod.manifest容器中搜寻pod的元数据
+
+定义了 一个叫作 downward 的卷， 并且通过 /etc/downward 目录挂载到我们的容器中。 卷所包含的文件会通过卷定义中的 downwardAPI.iterns 属性来定义（每个items.name都是一个卷目录下的一个文件）
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: downward
+  labels:
+    foo: bar
+  annotations:
+    key1: value1
+    key2: |
+      multi
+      line
+      value
+spec:
+  containers:
+  - name: main
+    image: busybox
+    command: ["sleep", "9999999"]
+    resources:
+      requests:
+        cpu: 15m
+        memory: 100Ki
+      limits:
+        cpu: 100m
+        memory: 4Mi
+    volumeMounts:
+    - name: downward
+      mountPath: /etc/downward
+  volumes:
+  - name: downward
+    downwardAPI:
+      items:
+      - path: "podName"
+        fieldRef:
+          fieldPath: metadata.name
+      - path: "podNamespace"
+        fieldRef:
+          fieldPath: metadata.namespace
+      - path: "labels"
+        fieldRef:
+          fieldPath: metadata.labels
+      - path: "annotations"
+        fieldRef:
+          fieldPath: metadata.annotations 
+      - path: "containerCpuRequestMilliCores"
+        resourceFieldRef:   
+          containerName: main     //暴露容器级的元数据，需要填入容器名
+          resource: requests.cpu 
+          divisor: 1m
+      - path: "containerMemoryLimitBytes"
+        resourceFieldRef:
+          containerName: main     //暴露容器级的元数据
+          resource: limits.memory
+          divisor: 1 
+```
+
+注意当暴露容器级的元数据时，可以做到容器A挂载指定容器B元数据的卷，所以可以做到同pod内不同容器之间传递元数据
+
+
+# pod 的实质
+
+## 同一个pod内部：
+1. 不同的容器共享Linux命名空间
+2. 不同的容器共享卷
+3. 不同的容器共享IP+port
+4. 不同的容器有不同的文件系统
+5. 不同的容器有不同的进程命名空间
+
+每个pod内部都有一个pause容器。用来存放所有命名空间以及所有容器的IP地址。
+
+## pod 之间的通信
+
+**相同节点之间**：
+
+每个pod都有一个虚拟网络接口，然后这个接口是在节点的IP网段上分出来的，然后各pod之间可以进行通信
+
+![Alt text](image/image80.png)
+
+**不同节点之间**：
+
+类似的每个节点都有一个虚拟网络接口，在集群的网段上
+
+![Alt text](image/image81.png)
+
+### Container Network Interface (CNI)
+
+启动kubelet时，添加--network-plugin=cni参数可以使用cni
+
+一般是创建一个daemonset，在每个节点上运行一个cni插件（pod）
+

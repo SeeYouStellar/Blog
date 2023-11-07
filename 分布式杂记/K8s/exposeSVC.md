@@ -145,7 +145,7 @@ Speaker：DaemonSet，对外广播 Service 的 IP 地址。把服务类型为Loa
 
 
 ## Ingress
->七层调度器，引入集群外部流量的方式
+>七层调度器，引入集群外部流量的方式。只需要一个公网 IP 就能为许多服务提供访问
 
 ### 组成
 
@@ -241,7 +241,7 @@ ingress-nginx需要后端服务是一个nodeport类型
 
 ![Alt text](image/image53.png)
 
-注意，若是在本机通过curl请求域名的话，需要在/etc/hosts内记录[IP:域名]，相当于客户端的dns解析。
+注意，若是在本机通过curl请求域名的话，需要在/etc/hosts内记录[IP:域名]，相当于客户端的dns解析。从这里也能看出，不同的域名访问（服务），最终访问的公网IP都是同一个。
 ```shell
 127.0.0.1 localhost
 10.10.10.200 kubia.example.com
@@ -312,3 +312,10 @@ apiVersion: networking.k8s.io/v1
 
 有些客户端需要连接一个服务中的所有pod（我不是很理解），可以通过将服务的clusterIP设置为NONE，创建一个headless服务，这个服务没有IP，那么客户端就可以通过dns服务发现podip，创建[域名：podip]的映射
 
+# 服务实现
+
+## kube-proxy
+
+位于每个节点上，监听服务资源和endpoint资源变化的组件，并将更新的资源信息转化成iptables规则，使客户端访问服务的请求到节点时，将服务IP重定向到pod IP。
+
+![Alt text](image/image82.png)

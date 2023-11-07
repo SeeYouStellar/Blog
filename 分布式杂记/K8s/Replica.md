@@ -92,3 +92,4 @@ spec.template.spec.nodeSelector筛选可以运行template里的pod的节点，�
 ds的spec.template.spec.nodeSelector改动，则会重新匹配新的标签上的节点并创建pod，同时删除不匹配节点上的pod
 
 删除ds，默认会将所有ds控制的pod也删除，添加``` --cascade=orphan```可以保留pod
+
