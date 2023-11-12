@@ -31,3 +31,9 @@ kubectl -n kube-system describe $(kubectl -n kube-system get secret -n kube-syst
 ![Alt text](image/image29.png)
 
 这种情况每次登录需要重新获取token，不太方便。可以使用kubeconfig登录
+
+# metric-server
+
+# prometheus
+
+# grafana

@@ -89,4 +89,4 @@ spec:
 
 访问ambassador使用pod的8001端口，ambassador监听8001端口。因为pod内部所有容器共享相同的网络接口，所以这两个8001是同一个，所以可以做到main容器访问ambassador容器，并由ambassdor容器访问apiserver。
 
-其中main访问ambassador使用http协议，而
+其中main访问ambassador使用http协议，而ambassador访问apiserver使用https协议

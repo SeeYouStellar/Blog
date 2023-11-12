@@ -419,3 +419,8 @@ spec:
 
 一般是创建一个daemonset，在每个节点上运行一个cni插件（pod）
 
+## 客户端pod与服务之间的通信 
+
+请求的流向：
+
+![Alt text](image/image83.png)
