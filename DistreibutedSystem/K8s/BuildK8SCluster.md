@@ -61,7 +61,7 @@ https://blog.csdn.net/shida_csdn/article/details/104054041
 kubeadm reset
 ```
 
-## 如何设置ssh root用户登录
+## 5. 如何设置ssh root用户登录
 
 编辑/root/.ssh/authorized_keys文件
 
@@ -81,3 +81,29 @@ PermitEmptyPasswords yes #允许免密登录
 ```shell
 service sshd restart
 ```
+
+## vscode ssh 远程连接失败（这里指ssh本身可以连上，但vscode无法通过ssh连上）
+
+1. 先检查是否ssh连接时是否有所占用情况，在output中查看是否阻塞在acquire lock on .vscode/bin/...文件，如果是用其他的终端将这个文件删除，并kill掉关于vscode的进程
+2. 删除本地.ssh/know_host文件里的关于该远程IP的信息
+3. 当出现启动卡在wget downloading上时，检查进程发现：
+   ![Alt text](image/image87.png)
+   说明是wget一直没有把linux端的vscode-server下载下来，那就手动下，直接去后面这个网址 https://update.code.visualstudio.com/commit:1a5daa3a0231a0fbba4f14db7ec463cf99d7768e/server-linux-x64/stable 里下载，然后把下载的压缩包解压重命名为1a5daa3a0231a0fbba4f14db7ec463cf99d7768e文件夹，把该文件夹移到登录用户的.vscode/bin/目录下即可
+
+## 6. vscode ssh 远程连接后，无法安装go插件
+
+1. go项目所需的go版本与本地go版本不一致
+   ```shell
+   rm -rf /usr/local/go && tar -C /usr/local -xzf go1.21.4.linux-amd64.tar.gz
+   export PATH=$PATH:/usr/local/go/bin
+   ```
+2. 安装时未使用国内代理，解决方法如下：
+   ![Alt text](image/image85.png)
+
+## 7. kc get cs查看控制节点组件时出错
+
+![Alt text](image/image86.png)
+
+查看控制器pod发现就绪探针一直检测失败
+
+参考[这个博客](https://blog.csdn.net/hedao0515/article/details/125993695?spm=1001.2101.3001.6650.8&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-8-125993695-blog-121940591.235%5Ev38%5Epc_relevant_anti_t3_base&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-8-125993695-blog-121940591.235%5Ev38%5Epc_relevant_anti_t3_base)

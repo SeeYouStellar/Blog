@@ -30,4 +30,50 @@ effect类型：
 
 # 节点亲缘性
 
+表达性更好的方式
+
+requiredDuringSchedulingIgnoredDuringExecution：调度时必须满足某个规则；在执行中的若节点规则改变，pod继续执行
+
+preferredDuringSchedulingIgnoredDuringExecution：调度时尽量满足某个规则；在执行中的若节点规则改变，pod继续执行
+
+```yaml
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: topology.kubernetes.io/zone
+            operator: In
+            values:
+            - antarctica-east1
+            - antarctica-west1
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1 # 权重
+        preference:
+          matchExpressions:
+          - key: another-node-label-key
+            operator: In
+            values:
+            - another-node-label-value
+      - weight: 5
+        preference:
+          matchExpressions:
+          - key: 
+            operator: 
+            values:
+            - 
+```
+
+operator：
+- In
+- Exists
+- Gt
+- Lt
+- NotIn 节点反亲和性
+- DoesExist 节点反亲和性
+
+nodeSelectorTerms字段可以有多个matchExpressions字段，只要满足一个就可以被调度
+
+nodeSelectorTerms.matchExpressions字段若有多个表达式，则必须都满足才能被调度
 
