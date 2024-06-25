@@ -45,6 +45,13 @@ https://blog.csdn.net/shida_csdn/article/details/104054041
 下载更老版本的calico并部署
 ![Alt text](./image/image3.png)
 
+### 2.1 calico成功部署仍无法访问其他节点
+![alt text](./image/image90.png)
+
+查看节点的kubelet日志：
+![alt text](./image/image91.png)
+
+这是因为部署网络插件时还未加入节点，那么网络插件pod就不会部署到节点上，所以要先节点加入集群再部署网络插件
 
 ## 3. 节点加入集群失败
 
