@@ -34,7 +34,7 @@ request是对资源需求的最小值，limit是对资源使用的最大值
 3. hpa请求apiserver更新扩缩容资源对象的副本数
 4. 接下来就交给资源对象的控制器
 
-**使用率（占用率）= 实际使用量/请求量**
+**使用率（占用率）= 实际资源使用量/资源请求量**
 
 ## 三、hpa使用实例：
 ```yaml
@@ -299,18 +299,7 @@ Horizontal Pod Autoscaler (HPA) 是 Kubernetes 中的一种机制，用于根据
 
 3. **计算期望的副本数量**：
    HPA 根据定义的目标利用率（如 `averageUtilization`）计算期望的副本数量。假设目标是所有 Pods 的平均 CPU 利用率应为 75%，HPA 会根据当前的利用率计算需要多少个 Pod 才能达到这个目标。
-   
-   具体计算公式如下：
-   
-   \[
-   \text{DesiredReplicas} = \left( \frac{\text{CurrentUtilization}}{\text{TargetUtilization}} \right) \times \text{CurrentReplicas}
-   \]
 
-   - `CurrentUtilization` 是当前所有 Pod 的平均资源利用率。
-   - `TargetUtilization` 是用户定义的目标资源利用率（如 `averageUtilization: 75`）。
-   - `CurrentReplicas` 是当前的 Pod 副本数量。
-   - `DesiredReplicas` 是计算出的期望副本数量。
-  
    ![alt text](image/image93.png)
 
    注意，越是当前资源利用率大，就越要扩容，所以手写的等式应该把currentReplicas和currentUtilization位置对调
