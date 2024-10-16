@@ -114,3 +114,9 @@ service sshd restart
 查看控制器pod发现就绪探针一直检测失败
 
 参考[这个博客](https://blog.csdn.net/hedao0515/article/details/125993695?spm=1001.2101.3001.6650.8&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-8-125993695-blog-121940591.235%5Ev38%5Epc_relevant_anti_t3_base&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-8-125993695-blog-121940591.235%5Ev38%5Epc_relevant_anti_t3_base)
+
+## 8. apt-get install docker-ce时出现无可用版本情况
+
+运行```apt-cache madison docker-ce```发现无可用docker-ce版本，原因是写入docker软件源时设备架构填错：
+![alt text](image.png)
+如果是arm架构要替换成arm64
